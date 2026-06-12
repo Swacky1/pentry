@@ -1,0 +1,56 @@
+name: Demo GIF
+
+# Renders docs/demo.gif from demo.tape using VHS, on a GitHub runner, and commits
+# it back. Fully automated: runs whenever the tape/example changes, or on demand
+# via the "Run workflow" button. No local tooling required.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'demo.tape'
+      - 'examples/basic/server.mjs'
+      - '.github/workflows/demo.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # Install the published CLI so the tape can call `pentry`.
+      - run: npm install -g @red_official/pentry
+
+      # Start the intentionally-vulnerable demo app on :4000.
+      - name: Start demo app
+        run: |
+          node examples/basic/server.mjs &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000 >/dev/null && break
+            sleep 1
+          done
+
+      - name: Render GIF with VHS
+        uses: charmbracelet/vhs-action@v2
+        with:
+          path: demo.tape
+
+      - name: Commit the GIF if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/demo.gif
+          if git diff --staged --quiet; then
+            echo "No GIF changes."
+          else
+            git commit -m "chore: regenerate demo GIF [skip ci]"
+            git push
+          fi

@@ -8,6 +8,8 @@ Like Jest, but it pen-tests. Point it at your running app and it probes for the
 OWASP Top 10 — broken access control, XSS, CORS holes, missing security headers,
 and more — then reports each finding with reproducible evidence and a fix.
 
+<img src="https://raw.githubusercontent.com/Swacky1/pentry/main/docs/demo.gif" alt="Pentry catching security issues during a test run" width="760">
+
 [![CI](https://github.com/Swacky1/pentry/actions/workflows/ci.yml/badge.svg)](https://github.com/Swacky1/pentry/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@red_official/pentry.svg)](https://www.npmjs.com/package/@red_official/pentry)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
