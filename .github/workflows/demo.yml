@@ -26,8 +26,17 @@ jobs:
         with:
           node-version: 22
 
+      # Pre-install ffmpeg so vhs-action doesn't have to (its own install is flaky).
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
+
       # Install the published CLI so the tape can call `pentry`.
       - run: npm install -g @red_official/pentry
+
+      # Sanity check: confirm the CLI is on PATH for VHS's shell.
+      - run: pentry --version
 
       # Start the intentionally-vulnerable demo app on :4000.
       - name: Start demo app
