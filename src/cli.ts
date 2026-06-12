@@ -10,7 +10,7 @@ import { colors } from './util/colors.js';
 import type { ReportFormat } from './report.js';
 import type { PentryConfig, Severity } from './types.js';
 
-const VERSION = '0.3.0';
+const VERSION = '1.0.0';
 
 const HELP = `
 ${colors.bold('Pentry')} — security tests for your web app.

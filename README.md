@@ -36,6 +36,19 @@ team (ZAP, Burp) or a SaaS you wire into CI. Neither lives where developers work
 - 📤 **Reports anywhere** — pretty console, JSON, **SARIF** (GitHub code scanning),
   **JUnit** (CI test UIs), **Markdown** (PR comments), and **HTML**.
 
+## How it compares
+
+|               | ZAP / Burp      | StackHawk      | **Pentry**               |
+| ------------- | --------------- | -------------- | ------------------------ |
+| Where it runs | External tool   | SaaS + CI      | **Your test suite & CI** |
+| Cost          | Free / paid     | Paid           | **Free & open source**   |
+| Setup         | Heavy, separate | Account + YAML | **`npm i` + 3 lines**    |
+| Runtime deps  | —               | —              | **Zero**                 |
+| Owned by      | Security team   | Security team  | **Developers**           |
+
+Pentry isn't trying to replace a full DAST suite or a human pentest — it catches
+the common, automatable issues _early_, where developers already work.
+
 ## Install
 
 ```bash
@@ -61,7 +74,7 @@ test('app has no security regressions', async () => {
 ### From the CLI
 
 ```bash
-npx pentry scan http://localhost:3000
+npx @red_official/pentry scan http://localhost:3000
 ```
 
 ```
@@ -129,7 +142,7 @@ and remediation for each.
 Upload SARIF to get findings in GitHub's Security tab and on PRs:
 
 ```yaml
-- run: npx pentry scan http://localhost:3000 --format sarif --output pentry.sarif
+- run: npx @red_official/pentry scan http://localhost:3000 --format sarif --output pentry.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: pentry.sarif

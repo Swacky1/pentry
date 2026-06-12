@@ -6,21 +6,26 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
+## [1.0.0] — 2026-06-12 — First public release 🎉
 
-- **Official GitHub Action** (`action.yml`): `uses: Swacky1/pentry@v1` to run a
-  scan in CI, with injection-safe argument passing.
+The first published release of Pentry. It bundles everything built across the
+v1.0–v1.2 milestones (see the entries below) into one stable, production-ready
+package, plus an official GitHub Action and a hardened release pipeline.
 
-### Changed
+**Highlights**
 
-- Hardened the release workflow: a gated `release` Environment, a tag↔version
-  guard, and least-privilege permissions.
-
-### Maintenance
-
-- Upgraded the dev toolchain — ESLint 10 (flat config), TypeScript 6,
-  typescript-eslint 8, `@types/node` 25, Vitest 4 — and cleared all dependency
-  advisories (`npm audit` reports 0). Runtime stays zero-dependency.
+- **13 security checks** covering the common, automatable OWASP Top 10 classes —
+  broken access control, reflected XSS, CORS, security headers, cookies, mixed
+  content, SRI, error/stack-trace disclosure, exposed `.env`/`.git`, GraphQL
+  introspection, and more. Every finding ships with reproducible evidence and a fix.
+- **Runs in your test suite and CI** — `scan()` + `report.assert()`, a CLI, and
+  matchers for Vitest/Jest.
+- **Six report formats** — console, JSON, SARIF, JUnit, Markdown, HTML.
+- **Baseline workflow, config files, `pentry init`, per-check overrides, and
+  expiring ignores** for frictionless adoption.
+- **Official GitHub Action** (`uses: Swacky1/pentry@v1`) with injection-safe args.
+- **Safe by default** (localhost-only), **zero runtime dependencies**, and a
+  **provenance-signed, environment-gated** publish pipeline. `npm audit`: 0.
 
 ## [0.3.0] — 2026-06-12
 
@@ -69,7 +74,7 @@ app and wire into existing tooling.
 
 ## [0.1.0] — 2026-06-11
 
-First public release.
+Initial development release (pre-1.0, not published to npm).
 
 ### Added
 
@@ -87,7 +92,8 @@ First public release.
 - Custom check support via the `Check` interface.
 - Zero runtime dependencies.
 
-[Unreleased]: https://github.com/Swacky1/pentry/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Swacky1/pentry/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Swacky1/pentry/releases/tag/v1.0.0
 [0.3.0]: https://github.com/Swacky1/pentry/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Swacky1/pentry/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Swacky1/pentry/releases/tag/v0.1.0
