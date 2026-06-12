@@ -1,4 +1,5 @@
 import { consoleReporter } from './reporters/console.js';
+import { htmlReporter } from './reporters/html.js';
 import { jsonReporter } from './reporters/json.js';
 import { junitReporter } from './reporters/junit.js';
 import { markdownReporter } from './reporters/markdown.js';
@@ -6,7 +7,7 @@ import { sarifReporter } from './reporters/sarif.js';
 import type { Check, Finding, ResolvedConfig, Severity, SeveritySummary } from './types.js';
 import { SEVERITY_ORDER, SEVERITIES } from './types.js';
 
-export type ReportFormat = 'console' | 'json' | 'sarif' | 'junit' | 'markdown';
+export type ReportFormat = 'console' | 'json' | 'sarif' | 'junit' | 'markdown' | 'html';
 
 export interface ScanReportOptions {
   /** Fingerprints accepted via a baseline — reported but not counted as blocking. */
@@ -113,6 +114,8 @@ export class ScanReport {
         return junitReporter(this.findings, this.config, this.checks);
       case 'markdown':
         return markdownReporter(this, summary);
+      case 'html':
+        return htmlReporter(this, summary);
       case 'console':
       default:
         return consoleReporter(this, summary);

@@ -114,6 +114,86 @@ Prefer auto-escaping templates plus a strict CSP as defense in depth.
 
 ---
 
+## `cache-control` — Sensitive response caching
+
+**Passive.** Flags responses that look sensitive (JSON, or anything that sets a
+cookie) but are cacheable (no `no-store`/`private`, or an explicit `public`/`max-age`).
+
+| Finding                      | Severity |
+| ---------------------------- | -------- |
+| Sensitive response cacheable | low      |
+
+**Fix:** Set `Cache-Control: no-store` (or `private, no-cache`) on sensitive data.
+
+---
+
+## `subresource-integrity` — Subresource Integrity
+
+**Passive.** Flags cross-origin `<script>`/`<link rel=stylesheet>` loaded without
+an `integrity` hash. Same-origin resources are ignored.
+
+| Finding                                        | Severity |
+| ---------------------------------------------- | -------- |
+| Cross-origin resource loaded without integrity | low      |
+
+**Fix:** Add `integrity`/`crossorigin` attributes, or self-host the resource.
+
+---
+
+## `transport-security` — Transport security
+
+**Active.** Detects mixed content (an HTTPS page loading `http://` resources) and
+missing HTTP→HTTPS redirects (the redirect check is skipped for localhost).
+
+| Finding                                  | Severity |
+| ---------------------------------------- | -------- |
+| Mixed content on an HTTPS page           | medium   |
+| No HTTP→HTTPS redirect (non-local hosts) | medium   |
+
+**Fix:** Serve all subresources over HTTPS; redirect HTTP→HTTPS and send HSTS.
+
+---
+
+## `error-disclosure` — Verbose error disclosure
+
+**Active.** Pokes routes with input that commonly triggers errors and looks for
+high-signal stack-trace markers (Node, Python, Java, PHP, Ruby, .NET).
+
+| Finding                             | Severity |
+| ----------------------------------- | -------- |
+| Stack trace disclosed in a response | medium   |
+
+**Fix:** Return generic error pages in production; log details server-side.
+
+---
+
+## `exposed-resources` — Exposed resources
+
+**Active.** Detects directory listing (auto-index) and a small, content-verified
+set of sensitive files served directly (`/.env`, `/.git/config`).
+
+| Finding                   | Severity |
+| ------------------------- | -------- |
+| Sensitive file exposed    | high     |
+| Directory listing enabled | medium   |
+
+**Fix:** Block dotfiles/VCS dirs at the web server; disable auto-indexing.
+
+---
+
+## `graphql-introspection` — GraphQL introspection
+
+**Active.** Sends a minimal introspection query to common GraphQL endpoints and
+flags any that return their schema.
+
+| Finding                       | Severity |
+| ----------------------------- | -------- |
+| GraphQL introspection enabled | medium   |
+
+**Fix:** Disable introspection in production or gate it behind authentication.
+
+---
+
 ## Selecting checks
 
 ```bash

@@ -76,8 +76,47 @@ export const cookiesCheck: Check = {
           );
         }
       }
+
+      const prefixIssue = checkCookiePrefix(name, cookie);
+      if (prefixIssue) {
+        findings.push(
+          ctx.finding({
+            key: `${name}:prefix`,
+            title: `Cookie prefix requirements not met (${name})`,
+            severity: 'medium',
+            description: prefixIssue,
+            remediation:
+              '`__Host-` cookies must set Secure, Path=/, and no Domain; `__Secure-` cookies ' +
+              'must set Secure. Otherwise the prefix gives a false sense of safety.',
+            references: [
+              'https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie#cookie_prefixes',
+            ],
+            target: res.evidence.request.url,
+            evidence: res.evidence,
+          }),
+        );
+      }
     }
 
     return findings;
   },
 };
+
+/**
+ * Validate the `__Host-` / `__Secure-` cookie prefixes. Browsers only enforce
+ * these when the attributes match, so a misconfigured prefix is a security
+ * mistake worth flagging. Returns a problem description or null.
+ */
+function checkCookiePrefix(name: string, cookie: string): string | null {
+  const secure = /;\s*secure/i.test(cookie);
+  if (name.startsWith('__Host-')) {
+    const pathRoot = /;\s*path=\/(;|\s|$)/i.test(cookie);
+    const hasDomain = /;\s*domain=/i.test(cookie);
+    if (!secure || !pathRoot || hasDomain) {
+      return `Cookie "${name}" uses the __Host- prefix but does not meet its requirements (Secure, Path=/, no Domain).`;
+    }
+  } else if (name.startsWith('__Secure-') && !secure) {
+    return `Cookie "${name}" uses the __Secure- prefix but is not marked Secure.`;
+  }
+  return null;
+}

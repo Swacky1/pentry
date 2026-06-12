@@ -6,6 +6,24 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-12
+
+The **v1.2 "Sharper signal"** milestone — more high-confidence checks and reports
+you'd paste into a PR.
+
+### Added
+
+- New checks:
+  - `cache-control` — sensitive (JSON / cookie-setting) responses that are cacheable
+  - `subresource-integrity` — cross-origin scripts/styles loaded without an integrity hash
+  - `transport-security` — mixed content on HTTPS pages, and missing HTTP→HTTPS redirects
+  - `error-disclosure` — stack traces / framework internals leaked in error responses
+  - `exposed-resources` — directory listing and sensitive files (`.env`, `.git/config`)
+  - `graphql-introspection` — GraphQL endpoints exposing their schema
+- More `security-headers` rules: Permissions-Policy and Cross-Origin-Opener-Policy.
+- Cookie **prefix validation** (`__Host-` / `__Secure-`) in the `cookies` check.
+- **HTML reporter** (`--format html`) — a self-contained, shareable report.
+
 ## [0.2.0] — 2026-06-12
 
 The **v1.1 "Adoptable"** milestone — make Pentry easy to drop onto an existing
@@ -53,6 +71,7 @@ First public release.
 - Custom check support via the `Check` interface.
 - Zero runtime dependencies.
 
-[Unreleased]: https://github.com/Swacky1/pentry/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Swacky1/pentry/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Swacky1/pentry/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Swacky1/pentry/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Swacky1/pentry/releases/tag/v0.1.0

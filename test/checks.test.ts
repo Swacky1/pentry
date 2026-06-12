@@ -35,6 +35,8 @@ describe('security-headers check', () => {
         'content-security-policy': "default-src 'self'; frame-ancestors 'none'",
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'no-referrer',
+        'permissions-policy': 'geolocation=(), camera=()',
+        'cross-origin-opener-policy': 'same-origin',
       });
       res.end('hello');
     });

@@ -26,11 +26,17 @@ export { builtInChecks, getCheck } from './checks/index.js';
 export {
   securityHeadersCheck,
   cookiesCheck,
+  cacheControlCheck,
   infoDisclosureCheck,
+  subresourceIntegrityCheck,
   corsCheck,
+  transportSecurityCheck,
   httpMethodsCheck,
   accessControlCheck,
   reflectedInputCheck,
+  errorDisclosureCheck,
+  exposedResourcesCheck,
+  graphqlIntrospectionCheck,
 } from './checks/index.js';
 
 export { createLogger } from './logger.js';

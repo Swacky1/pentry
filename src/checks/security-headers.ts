@@ -76,6 +76,28 @@ const RULES: HeaderRule[] = [
     remediation: 'Set "Referrer-Policy: strict-origin-when-cross-origin" or stricter.',
     references: ['https://developer.mozilla.org/docs/Web/HTTP/Headers/Referrer-Policy'],
   },
+  {
+    header: 'permissions-policy',
+    title: 'Missing Permissions-Policy header',
+    severity: 'low',
+    description:
+      'No Permissions-Policy was set. This header restricts which browser features (camera, ' +
+      'geolocation, microphone, …) the page and its iframes may use.',
+    remediation:
+      "Set a Permissions-Policy that disables features you don't use, e.g. " +
+      '"geolocation=(), camera=(), microphone=()".',
+    references: ['https://developer.mozilla.org/docs/Web/HTTP/Headers/Permissions-Policy'],
+  },
+  {
+    header: 'cross-origin-opener-policy',
+    title: 'Missing Cross-Origin-Opener-Policy header',
+    severity: 'low',
+    description:
+      'No Cross-Origin-Opener-Policy (COOP) was set. COOP isolates your browsing context from ' +
+      'cross-origin windows, mitigating cross-window attacks like XS-Leaks.',
+    remediation: 'Set "Cross-Origin-Opener-Policy: same-origin".',
+    references: ['https://developer.mozilla.org/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy'],
+  },
 ];
 
 export const securityHeadersCheck: Check = {

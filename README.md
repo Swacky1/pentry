@@ -34,7 +34,7 @@ team (ZAP, Burp) or a SaaS you wire into CI. Neither lives where developers work
   chain. Pentry has none.
 - 🧩 **Extensible** — built-in checks are just objects; write your own in a few lines.
 - 📤 **Reports anywhere** — pretty console, JSON, **SARIF** (GitHub code scanning),
-  and **JUnit** (CI test UIs).
+  **JUnit** (CI test UIs), **Markdown** (PR comments), and **HTML**.
 
 ## Install
 
@@ -103,17 +103,23 @@ const report = await scan({
 });
 ```
 
-## What it checks (V1)
+## What it checks
 
-| Check                  | ID                 | What it catches                                                                             |
-| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------- |
-| Security headers       | `security-headers` | Missing/invalid CSP, HSTS, X-Content-Type-Options, clickjacking protection, Referrer-Policy |
-| Cookie flags           | `cookies`          | Cookies missing `HttpOnly`, `Secure`, `SameSite`                                            |
-| Information disclosure | `info-disclosure`  | `Server`/`X-Powered-By` version banners                                                     |
-| CORS misconfiguration  | `cors`             | Arbitrary-origin reflection, credentialed wildcard                                          |
-| Dangerous HTTP methods | `http-methods`     | `TRACE`/`TRACK` enabled (Cross-Site Tracing)                                                |
-| Broken access control  | `access-control`   | `protected` routes reachable without auth                                                   |
-| Reflected input (XSS)  | `reflected-input`  | User input reflected unencoded into HTML                                                    |
+| Check                  | ID                      | What it catches                                                           |
+| ---------------------- | ----------------------- | ------------------------------------------------------------------------- |
+| Security headers       | `security-headers`      | Missing/invalid CSP, HSTS, X-CTO, clickjacking, Referrer/Permissions/COOP |
+| Cookie flags           | `cookies`               | Missing `HttpOnly`/`Secure`/`SameSite`; `__Host-`/`__Secure-` prefixes    |
+| Sensitive caching      | `cache-control`         | JSON / cookie-setting responses that are cacheable                        |
+| Information disclosure | `info-disclosure`       | `Server`/`X-Powered-By` version banners                                   |
+| Subresource Integrity  | `subresource-integrity` | Cross-origin scripts/styles without an integrity hash                     |
+| CORS misconfiguration  | `cors`                  | Arbitrary-origin reflection, credentialed wildcard                        |
+| Transport security     | `transport-security`    | Mixed content; missing HTTP→HTTPS redirect                                |
+| Dangerous HTTP methods | `http-methods`          | `TRACE`/`TRACK` enabled (Cross-Site Tracing)                              |
+| Broken access control  | `access-control`        | `protected` routes reachable without auth                                 |
+| Reflected input (XSS)  | `reflected-input`       | User input reflected unencoded into HTML                                  |
+| Verbose errors         | `error-disclosure`      | Stack traces / framework internals in error responses                     |
+| Exposed resources      | `exposed-resources`     | Directory listing; `.env` / `.git/config` served directly                 |
+| GraphQL introspection  | `graphql-introspection` | GraphQL endpoints exposing their schema                                   |
 
 See [docs/checks.md](./docs/checks.md) for the full reference, including severity
 and remediation for each.

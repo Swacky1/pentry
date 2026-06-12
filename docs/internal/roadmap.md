@@ -38,25 +38,24 @@ pre-existing findings, and wire it into the tools they already use in minutes._
 - [x] **Per-check overrides** in config: remap a check's severity or disable it.
 - [x] **Finding suppression by annotation**: richer `ignore` with reasons + expiry.
 
-## v1.2 — Sharper signal
+## v1.2 — Sharper signal ✅ (shipped in 0.3.0)
 
 _Theme: widen the high-confidence (mostly passive) check set and make reports
 something you'd paste into a PR. No risky probes yet — precision first._
 
-- [ ] **More header checks**: Permissions-Policy, COOP/COEP/CORP, cache
-      directives on sensitive responses, `X-DNS-Prefetch-Control`.
-- [ ] **Cookie prefix validation** (`__Host-` / `__Secure-` correctness).
-- [ ] **HTTPS/TLS enforcement**: HTTP→HTTPS redirect, mixed-content references in
-      HTML, missing `upgrade-insecure-requests`.
-- [ ] **Subresource Integrity (SRI)**: external `<script>`/`<link>` without
+- [x] **More header checks**: Permissions-Policy and Cross-Origin-Opener-Policy
+      (COEP/CORP and `X-DNS-Prefetch-Control` deferred — low signal, easy to add).
+- [x] **Cookie prefix validation** (`__Host-` / `__Secure-` correctness).
+- [x] **HTTPS/TLS enforcement**: HTTP→HTTPS redirect, mixed-content references in
+      HTML (`transport-security` check).
+- [x] **Subresource Integrity (SRI)**: external `<script>`/`<link>` without
       integrity hashes.
-- [ ] **Verbose error / stack-trace disclosure**: framework error pages leaking
-      internals (passive content inspection).
-- [ ] **Directory listing & common debug endpoints** exposed.
-- [ ] **GraphQL introspection enabled** in production.
-- [ ] **Markdown reporter** + a ready-to-use PR-comment format.
-- [ ] **HTML report** (`--format html`) for sharing outside the terminal.
-- [ ] Richer console output: grouping by route/severity, `--quiet` summaries.
+- [x] **Verbose error / stack-trace disclosure** (`error-disclosure`).
+- [x] **Directory listing & exposed files** (`.env`, `.git`) — `exposed-resources`.
+- [x] **GraphQL introspection enabled** in production.
+- [x] **Markdown reporter** (shipped in 0.2.0) — works as a PR-comment format.
+- [x] **HTML report** (`--format html`) for sharing outside the terminal.
+- [ ] Richer console output: grouping by route, `--quiet` summaries (deferred to 1.2.x).
 
 ## v1.3 — Knows your app
 

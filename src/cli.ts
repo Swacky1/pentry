@@ -10,7 +10,7 @@ import { colors } from './util/colors.js';
 import type { ReportFormat } from './report.js';
 import type { PentryConfig, Severity } from './types.js';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 
 const HELP = `
 ${colors.bold('Pentry')} — security tests for your web app.
@@ -37,7 +37,7 @@ ${colors.bold('Examples')}
 ${colors.bold('Options')}
   --routes <list>       Comma-separated paths to test (e.g. /api/a,/api/b)
   --fail-on <severity>  Min severity that exits non-zero: info|low|medium|high|critical (default: medium)
-  --format <fmt>        Output format: console|json|sarif|junit|markdown (default: console)
+  --format <fmt>        Output format: console|json|sarif|junit|markdown|html (default: console)
   --output <file>       Write the report to a file instead of stdout
   --only <ids>          Run only these check IDs (comma-separated)
   --exclude <ids>       Skip these check IDs (comma-separated)
