@@ -1,8 +1,11 @@
 name: Demo GIF
 
-# Renders docs/demo.gif from demo.tape using VHS, on a GitHub runner, and commits
+# Renders docs/demo.gif from demo.tape using VHS on a GitHub runner and commits
 # it back. Fully automated: runs whenever the tape/example changes, or on demand
 # via the "Run workflow" button. No local tooling required.
+#
+# VHS + its deps (ttyd, ffmpeg) are installed directly via apt/release binaries
+# rather than charmbracelet/vhs-action, whose bundled ffmpeg install is flaky.
 
 on:
   workflow_dispatch:
@@ -26,16 +29,26 @@ jobs:
         with:
           node-version: 22
 
-      # Pre-install ffmpeg so vhs-action doesn't have to (its own install is flaky).
-      - name: Install ffmpeg
+      - name: Install VHS, ttyd and ffmpeg
         run: |
+          set -euxo pipefail
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
+          # ttyd (static binary)
+          sudo curl -fsSL https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 \
+            -o /usr/local/bin/ttyd
+          sudo chmod +x /usr/local/bin/ttyd
+          # vhs (charm apt repo)
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" \
+            | sudo tee /etc/apt/sources.list.d/charm.list
+          sudo apt-get update
+          sudo apt-get install -y vhs
+          vhs --version && ttyd --version && ffmpeg -version | head -1
 
       # Install the published CLI so the tape can call `pentry`.
       - run: npm install -g @red_official/pentry
-
-      # Sanity check: confirm the CLI is on PATH for VHS's shell.
       - run: pentry --version
 
       # Start the intentionally-vulnerable demo app on :4000.
@@ -47,10 +60,8 @@ jobs:
             sleep 1
           done
 
-      - name: Render GIF with VHS
-        uses: charmbracelet/vhs-action@v2
-        with:
-          path: demo.tape
+      - name: Render GIF
+        run: vhs demo.tape
 
       - name: Commit the GIF if it changed
         run: |
