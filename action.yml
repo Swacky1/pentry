@@ -1,5 +1,5 @@
-name: 'Pentry security scan'
-description: 'Run Pentry security tests against a running app and fail the build on findings.'
+name: 'Pentry — Security tests for your app'
+description: 'Pen-test your running app in CI — OWASP-style checks that fail the build, with evidence and a fix.'
 author: 'Swacky1'
 branding:
   icon: 'shield'

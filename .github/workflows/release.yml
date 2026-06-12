@@ -11,7 +11,9 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      # Only full semver tags publish. Floating tags like `v1` (used for the
+      # GitHub Action) never trigger a publish.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: read
@@ -52,8 +54,23 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      # Skip publishing if this exact version is already on npm — makes re-runs
+      # (e.g. after moving a tag) idempotent instead of failing.
+      - name: Check if already published
+        id: published
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VER" version >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VER is already on npm — skipping publish."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # Publishes with provenance. Requires an NPM_TOKEN (Automation token)
       # stored as a secret on the "release" environment or the repository.
-      - run: npm publish --provenance --access public
+      - if: steps.published.outputs.skip == 'false'
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

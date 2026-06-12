@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/Swacky1/pentry/main/docs/logo.svg" alt="Pentry" width="88">
+
 # Pentry
 
 **Security tests for your web app, right in your test suite.**
