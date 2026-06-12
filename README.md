@@ -120,6 +120,24 @@ const report = await scan({
 });
 ```
 
+## Route discovery
+
+Don't hand-list routes — derive them from your app or an OpenAPI spec:
+
+```ts
+import { scan, discoverExpressRoutes, discoverOpenApiRoutes } from '@red_official/pentry';
+
+// From an Express app instance
+await scan({ target: `http://localhost:${port}`, routes: discoverExpressRoutes(app) });
+
+// …or from any OpenAPI / Swagger document (framework-agnostic)
+import spec from './openapi.json' with { type: 'json' };
+await scan({ target: 'http://localhost:3000', routes: discoverOpenApiRoutes(spec) });
+```
+
+`discoverRoutes(input)` auto-detects which adapter to use. More adapters
+(Fastify, Next.js) are on the [roadmap](./docs/internal/roadmap.md).
+
 ## What it checks
 
 | Check                  | ID                      | What it catches                                                           |

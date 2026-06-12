@@ -20,6 +20,8 @@ export type { BaselineFile } from './baseline.js';
 export { scaffoldInit } from './init.js';
 export type { InitResult } from './init.js';
 
+export { discoverRoutes, discoverExpressRoutes, discoverOpenApiRoutes } from './discovery/index.js';
+
 export { pentryMatchers } from './matchers.js';
 
 export { builtInChecks, getCheck } from './checks/index.js';

@@ -6,6 +6,22 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-06-12 — Knows your app
+
+Finishes the "Sharper signal" console work and delivers route discovery so you
+stop hand-listing routes.
+
+### Added
+
+- **Route discovery adapters** — feed routes straight from your app:
+  - `discoverExpressRoutes(app)` — top-level + mounted Express routes
+  - `discoverOpenApiRoutes(spec)` — any OpenAPI/Swagger document (framework-agnostic)
+  - `discoverRoutes(input)` — auto-detects which adapter to use
+- **Concurrency** — checks now run in parallel (default 6, `concurrency` /
+  `--concurrency`), with output kept deterministic. Configurable; gentle on dev servers.
+- **Watch mode** — `pentry scan --watch [--interval <ms>]` re-scans on an interval.
+- **Grouped console output** — findings are grouped under severity headers.
+
 ## [1.0.0] — 2026-06-12 — First public release 🎉
 
 The first published release of Pentry. It bundles everything built across the
@@ -92,7 +108,8 @@ Initial development release (pre-1.0, not published to npm).
 - Custom check support via the `Check` interface.
 - Zero runtime dependencies.
 
-[Unreleased]: https://github.com/Swacky1/pentry/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Swacky1/pentry/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Swacky1/pentry/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Swacky1/pentry/releases/tag/v1.0.0
 [0.3.0]: https://github.com/Swacky1/pentry/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Swacky1/pentry/compare/v0.1.0...v0.2.0

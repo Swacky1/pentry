@@ -10,7 +10,7 @@ import { colors } from './util/colors.js';
 import type { ReportFormat } from './report.js';
 import type { PentryConfig, Severity } from './types.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 const HELP = `
 ${colors.bold('Pentry')} — security tests for your web app.
@@ -43,6 +43,9 @@ ${colors.bold('Options')}
   --exclude <ids>       Skip these check IDs (comma-separated)
   --ignore <list>       Suppress finding fingerprints or check IDs (comma-separated)
   --baseline <file>     Treat findings in this baseline as accepted (only new ones fail)
+  --concurrency <n>     Max checks to run in parallel (default: 6)
+  --watch               Re-scan on an interval until stopped
+  --interval <ms>       Watch interval in milliseconds (default: 5000)
   --timeout <ms>        Per-request timeout in milliseconds (default: 10000)
   --allow-external      Permit scanning non-local targets (you must be authorized)
   --config <file>       Load options from a JS/JSON config file
@@ -114,6 +117,7 @@ function buildConfig(
     failOn: (flags['fail-on'] as Severity) ?? fileConfig.failOn,
     allowExternal: flags['allow-external'] === true || fileConfig.allowExternal,
     timeout: flags.timeout ? Number(flags.timeout) : fileConfig.timeout,
+    concurrency: flags.concurrency ? Number(flags.concurrency) : fileConfig.concurrency,
   };
 }
 
@@ -144,6 +148,29 @@ async function runBaseline(
       `Future scans with --baseline ${outPath} will only fail on NEW findings.\n`,
   );
   return 0;
+}
+
+/** Re-scan on an interval until interrupted. Always uses the console format. */
+async function runWatch(
+  config: PentryConfig,
+  flags: Record<string, string | boolean>,
+): Promise<number> {
+  const intervalMs = flags.interval ? Math.max(1000, Number(flags.interval)) : 5000;
+  const logger = createLogger({ quiet: true });
+  for (;;) {
+    process.stdout.write('\x1Bc'); // clear screen
+    try {
+      const report = await scan(config, { logger });
+      process.stdout.write(`${report.format('console')}\n`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      process.stdout.write(`${colors.red('✗ scan failed:')} ${message}\n`);
+    }
+    process.stdout.write(
+      colors.dim(`\nWatching — re-scanning every ${intervalMs}ms. Press Ctrl+C to stop.\n`),
+    );
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
 }
 
 async function main(argv: string[]): Promise<number> {
@@ -180,6 +207,10 @@ async function main(argv: string[]): Promise<number> {
     quiet: flags.quiet === true || format !== 'console',
     verbose: flags.verbose === true,
   });
+
+  if (flags.watch === true) {
+    return runWatch(config, flags);
+  }
 
   const report = await scan(config, { logger });
   const output = report.format(format);

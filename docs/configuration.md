@@ -22,6 +22,7 @@ All options live on the `PentryConfig` object.
 | `failOn`         | `Severity`                      | `'medium'`   | Lowest severity that fails an assertion / exits non-zero.     |
 | `allowExternal`  | `boolean`                       | `false`      | Permit non-local targets. You must be authorized.             |
 | `timeout`        | `number`                        | `10000`      | Per-request timeout in milliseconds.                          |
+| `concurrency`    | `number`                        | `6`          | Max checks to run in parallel (kept gentle on dev servers).   |
 | `auth`           | `AuthConfig`                    | —            | Credentials attached to authenticated requests.               |
 | `maxBodyCapture` | `number`                        | `65536`      | Max bytes of a response body to read/keep as evidence.        |
 
@@ -152,17 +153,19 @@ toward `failOn`. Commit the baseline file and shrink it as you fix issues. See
 
 ## CLI flags
 
-| Flag                                             | Maps to                |
-| ------------------------------------------------ | ---------------------- |
-| `--routes a,b,c`                                 | `routes`               |
-| `--fail-on <sev>`                                | `failOn`               |
-| `--only a,b`                                     | `checks`               |
-| `--exclude a,b`                                  | `exclude`              |
-| `--ignore a,b`                                   | `ignore`               |
-| `--baseline <file>`                              | `baseline`             |
-| `--timeout <ms>`                                 | `timeout`              |
-| `--allow-external`                               | `allowExternal: true`  |
-| `--format console\|json\|sarif\|junit\|markdown` | output format          |
-| `--output <file>`                                | write report to a file |
-| `--config <file>`                                | load a config file     |
-| `--quiet` / `--verbose`                          | logging verbosity      |
+| Flag                                                   | Maps to                |
+| ------------------------------------------------------ | ---------------------- |
+| `--routes a,b,c`                                       | `routes`               |
+| `--fail-on <sev>`                                      | `failOn`               |
+| `--only a,b`                                           | `checks`               |
+| `--exclude a,b`                                        | `exclude`              |
+| `--ignore a,b`                                         | `ignore`               |
+| `--baseline <file>`                                    | `baseline`             |
+| `--concurrency <n>`                                    | `concurrency`          |
+| `--watch` / `--interval <ms>`                          | re-scan on an interval |
+| `--timeout <ms>`                                       | `timeout`              |
+| `--allow-external`                                     | `allowExternal: true`  |
+| `--format console\|json\|sarif\|junit\|markdown\|html` | output format          |
+| `--output <file>`                                      | write report to a file |
+| `--config <file>`                                      | load a config file     |
+| `--quiet` / `--verbose`                                | logging verbosity      |

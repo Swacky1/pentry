@@ -42,19 +42,24 @@ export async function scan(config: PentryConfig, options: ScanOptions = {}): Pro
   const http = new FetchHttpClient(resolved);
 
   const checks = selectChecks(resolved, options);
-  logger.info(`Scanning ${resolved.target} with ${checks.length} check(s)…`);
+  logger.info(
+    `Scanning ${resolved.target} with ${checks.length} check(s) ` +
+      `(concurrency ${resolved.concurrency})…`,
+  );
 
-  const allFindings: Finding[] = [];
-  for (const check of checks) {
+  // Run checks concurrently (capped), but keep results in check order so output
+  // is deterministic regardless of which check finishes first.
+  const perCheck: Finding[][] = new Array(checks.length).fill(null).map(() => []);
+  await runWithConcurrency(checks, resolved.concurrency, async (check, index) => {
     logger.debug(`running check: ${check.id}`);
     const ctx = createContext(check, resolved, http, logger);
     try {
-      const findings = await check.run(ctx);
-      allFindings.push(...findings);
+      perCheck[index] = await check.run(ctx);
     } catch (error) {
       logger.warn(`check "${check.id}" errored and was skipped: ${describeError(error)}`);
     }
-  }
+  });
+  const allFindings = perCheck.flat();
 
   const overridden = applyOverrides(allFindings, resolved);
   const filtered = applyIgnores(overridden, resolved.ignore, new Date(), logger);
@@ -152,6 +157,22 @@ function matchesIgnore(finding: Finding, rule: IgnoreRule): boolean {
   if (rule.fingerprint && finding.fingerprint === rule.fingerprint) return true;
   if (rule.check && finding.checkId === rule.check) return true;
   return false;
+}
+
+/** Run `worker` over `items` with at most `limit` in flight. */
+async function runWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  let next = 0;
+  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) {
+      const index = next++;
+      await worker(items[index]!, index);
+    }
+  });
+  await Promise.all(runners);
 }
 
 function describeError(error: unknown): string {

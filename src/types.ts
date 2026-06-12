@@ -142,6 +142,8 @@ export interface PentryConfig {
   allowExternal?: boolean;
   /** Per-request timeout in milliseconds. */
   timeout?: number;
+  /** Max number of checks to run concurrently. Keep modest to be gentle on a dev server. */
+  concurrency?: number;
   /** Credentials for authenticated requests. */
   auth?: AuthConfig;
   /** Max bytes of a response body to capture as evidence. */
@@ -161,6 +163,7 @@ export interface ResolvedConfig {
   failOn: Severity;
   allowExternal: boolean;
   timeout: number;
+  concurrency: number;
   auth?: AuthConfig;
   maxBodyCapture: number;
 }

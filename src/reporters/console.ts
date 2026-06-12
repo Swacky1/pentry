@@ -29,7 +29,15 @@ export function consoleReporter(report: ScanReport, summary: SeveritySummary): s
     (a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity],
   );
 
+  let currentSeverity: Severity | null = null;
   for (const f of sorted) {
+    // Group header whenever the severity changes (sorted high → low).
+    if (f.severity !== currentSeverity) {
+      currentSeverity = f.severity;
+      const count = sorted.filter((x) => x.severity === currentSeverity).length;
+      lines.push('');
+      lines.push(colors.gray(`──── ${currentSeverity.toUpperCase()} (${count}) ────`));
+    }
     const baselined = report.isBaselined(f);
     lines.push('');
     const tag = baselined ? colors.gray(' (baseline)') : '';

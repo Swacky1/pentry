@@ -26,3 +26,4 @@ npm-debug.log*
 # Pentry output artifacts
 *.sarif
 pentry-report.json
+/docs/internal

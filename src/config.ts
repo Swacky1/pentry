@@ -9,6 +9,7 @@ const DEFAULTS = {
   failOn: 'medium' as Severity,
   allowExternal: false,
   timeout: 10_000,
+  concurrency: 6,
   maxBodyCapture: 64 * 1024,
 };
 
@@ -65,6 +66,7 @@ export function resolveConfig(config: PentryConfig): ResolvedConfig {
     failOn: config.failOn ?? DEFAULTS.failOn,
     allowExternal,
     timeout: config.timeout ?? DEFAULTS.timeout,
+    concurrency: Math.max(1, config.concurrency ?? DEFAULTS.concurrency),
     auth: config.auth,
     maxBodyCapture: config.maxBodyCapture ?? DEFAULTS.maxBodyCapture,
   };
