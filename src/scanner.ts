@@ -1,3 +1,4 @@
+import { loadBaseline } from './baseline.js';
 import { builtInChecks } from './checks/index.js';
 import { resolveConfig } from './config.js';
 import { FetchHttpClient } from './http/client.js';
@@ -8,6 +9,7 @@ import type {
   CheckContext,
   Finding,
   FindingInput,
+  IgnoreRule,
   Logger,
   PentryConfig,
   ResolvedConfig,
@@ -20,6 +22,8 @@ export interface ScanOptions {
   replaceChecks?: boolean;
   /** Custom logger. Defaults to a stderr logger; pass `silentLogger` to silence. */
   logger?: Logger;
+  /** Baselined fingerprints (overrides loading from `config.baseline`). */
+  baseline?: Set<string>;
 }
 
 /**
@@ -52,8 +56,11 @@ export async function scan(config: PentryConfig, options: ScanOptions = {}): Pro
     }
   }
 
-  const filtered = applyIgnores(allFindings, resolved.ignore);
-  return new ScanReport(filtered, resolved, checks);
+  const overridden = applyOverrides(allFindings, resolved);
+  const filtered = applyIgnores(overridden, resolved.ignore, new Date(), logger);
+  const baseline =
+    options.baseline ?? (resolved.baseline ? loadBaseline(resolved.baseline) : new Set<string>());
+  return new ScanReport(filtered, resolved, checks, { baseline });
 }
 
 /** Lower-level entry point that returns the raw report; mirrors `scan`. */
@@ -80,7 +87,17 @@ function selectChecks(config: ResolvedConfig, options: ScanOptions): Check[] {
     const deny = new Set(config.exclude);
     checks = checks.filter((c) => !deny.has(c.id));
   }
+  // A check disabled via `overrides[id].enabled = false` is dropped too.
+  checks = checks.filter((c) => config.overrides[c.id]?.enabled !== false);
   return checks;
+}
+
+/** Remap finding severities per `overrides[checkId].severity`. */
+function applyOverrides(findings: Finding[], config: ResolvedConfig): Finding[] {
+  return findings.map((f) => {
+    const severity = config.overrides[f.checkId]?.severity;
+    return severity ? { ...f, severity } : f;
+  });
 }
 
 function createContext(
@@ -107,10 +124,34 @@ function createContext(
   };
 }
 
-function applyIgnores(findings: Finding[], ignore: string[]): Finding[] {
+function applyIgnores(
+  findings: Finding[],
+  ignore: IgnoreRule[],
+  now: Date,
+  logger: Logger,
+): Finding[] {
   if (ignore.length === 0) return findings;
-  const ignored = new Set(ignore);
-  return findings.filter((f) => !ignored.has(f.fingerprint) && !ignored.has(f.checkId));
+
+  // An ignore rule with an `expires` date in the past no longer applies.
+  const active = ignore.filter((rule) => {
+    if (!rule.expires) return true;
+    const ts = Date.parse(rule.expires);
+    if (Number.isNaN(ts)) {
+      logger.warn(`ignore rule has invalid expires date "${rule.expires}" — treating as active`);
+      return true;
+    }
+    const live = ts >= now.getTime();
+    if (!live) logger.debug(`ignore rule expired (${rule.expires}); finding will resurface`);
+    return live;
+  });
+
+  return findings.filter((f) => !active.some((rule) => matchesIgnore(f, rule)));
+}
+
+function matchesIgnore(finding: Finding, rule: IgnoreRule): boolean {
+  if (rule.fingerprint && finding.fingerprint === rule.fingerprint) return true;
+  if (rule.check && finding.checkId === rule.check) return true;
+  return false;
 }
 
 function describeError(error: unknown): string {

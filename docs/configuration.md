@@ -10,18 +10,20 @@ Pentry can be configured three ways, in increasing precedence:
 
 All options live on the `PentryConfig` object.
 
-| Option           | Type                         | Default      | Description                                                   |
-| ---------------- | ---------------------------- | ------------ | ------------------------------------------------------------- |
-| `target`         | `string`                     | — (required) | Base URL of the app under test, e.g. `http://localhost:3000`. |
-| `routes`         | `Array<string \| RouteSpec>` | `['/']`      | Paths to probe. The base path `/` is always included.         |
-| `checks`         | `string[]`                   | all          | Allowlist of check IDs to run.                                |
-| `exclude`        | `string[]`                   | `[]`         | Check IDs to skip (applied after `checks`).                   |
-| `ignore`         | `string[]`                   | `[]`         | Finding fingerprints or check IDs to suppress from results.   |
-| `failOn`         | `Severity`                   | `'medium'`   | Lowest severity that fails an assertion / exits non-zero.     |
-| `allowExternal`  | `boolean`                    | `false`      | Permit non-local targets. You must be authorized.             |
-| `timeout`        | `number`                     | `10000`      | Per-request timeout in milliseconds.                          |
-| `auth`           | `AuthConfig`                 | —            | Credentials attached to authenticated requests.               |
-| `maxBodyCapture` | `number`                     | `65536`      | Max bytes of a response body to read/keep as evidence.        |
+| Option           | Type                            | Default      | Description                                                   |
+| ---------------- | ------------------------------- | ------------ | ------------------------------------------------------------- |
+| `target`         | `string`                        | — (required) | Base URL of the app under test, e.g. `http://localhost:3000`. |
+| `routes`         | `Array<string \| RouteSpec>`    | `['/']`      | Paths to probe. The base path `/` is always included.         |
+| `checks`         | `string[]`                      | all          | Allowlist of check IDs to run.                                |
+| `exclude`        | `string[]`                      | `[]`         | Check IDs to skip (applied after `checks`).                   |
+| `ignore`         | `Array<string \| IgnoreRule>`   | `[]`         | Findings to suppress (strings or rich rules, see below).      |
+| `overrides`      | `Record<string, CheckOverride>` | `{}`         | Per-check severity remap / enable-disable.                    |
+| `baseline`       | `string`                        | —            | Path to a baseline file; only _new_ findings fail.            |
+| `failOn`         | `Severity`                      | `'medium'`   | Lowest severity that fails an assertion / exits non-zero.     |
+| `allowExternal`  | `boolean`                       | `false`      | Permit non-local targets. You must be authorized.             |
+| `timeout`        | `number`                        | `10000`      | Per-request timeout in milliseconds.                          |
+| `auth`           | `AuthConfig`                    | —            | Credentials attached to authenticated requests.               |
+| `maxBodyCapture` | `number`                        | `65536`      | Max bytes of a response body to read/keep as evidence.        |
 
 ### `RouteSpec`
 
@@ -78,30 +80,35 @@ export default defineConfig({
 });
 ```
 
-The CLI auto-loads `pentry.config.json` from the working directory if present, or
-point at any file with `--config <path>`.
+The CLI auto-discovers `pentry.config.{js,mjs,cjs,json}` in the working directory,
+or point at any file with `--config <path>`. (`.ts` configs load only under a
+TypeScript-aware runtime such as `tsx`.) Generate a starter config + test with
+`pentry init`.
 
-## CLI flags
+## Per-check overrides
 
-| Flag                                   | Maps to                |
-| -------------------------------------- | ---------------------- |
-| `--routes a,b,c`                       | `routes`               |
-| `--fail-on <sev>`                      | `failOn`               |
-| `--only a,b`                           | `checks`               |
-| `--exclude a,b`                        | `exclude`              |
-| `--ignore a,b`                         | `ignore`               |
-| `--timeout <ms>`                       | `timeout`              |
-| `--allow-external`                     | `allowExternal: true`  |
-| `--format console\|json\|sarif\|junit` | output format          |
-| `--output <file>`                      | write report to a file |
-| `--config <file>`                      | load a config file     |
-| `--quiet` / `--verbose`                | logging verbosity      |
+Tune an individual check without forking it. Keyed by check ID:
+
+```json
+{
+  "overrides": {
+    "info-disclosure": { "severity": "info" },
+    "http-methods": { "enabled": false }
+  }
+}
+```
+
+```ts
+interface CheckOverride {
+  severity?: Severity; // force this check's findings to a severity
+  enabled?: boolean; // false disables the check (like adding to `exclude`)
+}
+```
 
 ## Suppressing a finding
 
-Every finding has a stable `fingerprint`. To accept a specific finding (e.g. a
-known, risk-accepted issue), add its fingerprint or the whole check ID to
-`ignore`:
+Every finding has a stable `fingerprint`. The simple form accepts a fingerprint
+or a whole check ID:
 
 ```json
 {
@@ -112,4 +119,50 @@ known, risk-accepted issue), add its fingerprint or the whole check ID to
 }
 ```
 
+The rich form documents _why_ and can expire — after `expires`, the suppression
+lapses and the finding resurfaces, so dismissals don't become permanent blind
+spots:
+
+```json
+{
+  "ignore": [
+    {
+      "check": "info-disclosure",
+      "reason": "Server banner removed at the LB — ticket SEC-42",
+      "expires": "2026-09-01"
+    }
+  ]
+}
+```
+
 Print fingerprints with `--format json` to copy the exact value.
+
+## Baselines
+
+For an app that already has findings, snapshot them so only _new_ issues fail:
+
+```bash
+pentry baseline http://localhost:3000        # writes pentry-baseline.json
+pentry scan http://localhost:3000 --baseline pentry-baseline.json
+```
+
+Baselined findings are still reported (marked `(baseline)`), but don't count
+toward `failOn`. Commit the baseline file and shrink it as you fix issues. See
+[getting-started](./getting-started.md) for the adoption workflow.
+
+## CLI flags
+
+| Flag                                             | Maps to                |
+| ------------------------------------------------ | ---------------------- |
+| `--routes a,b,c`                                 | `routes`               |
+| `--fail-on <sev>`                                | `failOn`               |
+| `--only a,b`                                     | `checks`               |
+| `--exclude a,b`                                  | `exclude`              |
+| `--ignore a,b`                                   | `ignore`               |
+| `--baseline <file>`                              | `baseline`             |
+| `--timeout <ms>`                                 | `timeout`              |
+| `--allow-external`                               | `allowExternal: true`  |
+| `--format console\|json\|sarif\|junit\|markdown` | output format          |
+| `--output <file>`                                | write report to a file |
+| `--config <file>`                                | load a config file     |
+| `--quiet` / `--verbose`                          | logging verbosity      |

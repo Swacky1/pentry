@@ -9,9 +9,18 @@ export { scan, Scanner, silentLogger } from './scanner.js';
 export type { ScanOptions } from './scanner.js';
 
 export { ScanReport } from './report.js';
-export type { ReportFormat } from './report.js';
+export type { ReportFormat, ScanReportOptions } from './report.js';
 
 export { defineConfig, resolveConfig, isLocalHost, UnauthorizedTargetError } from './config.js';
+export { findConfigFile, loadConfigFile, CONFIG_FILENAMES } from './config-file.js';
+
+export { loadBaseline, createBaseline, writeBaseline, DEFAULT_BASELINE_PATH } from './baseline.js';
+export type { BaselineFile } from './baseline.js';
+
+export { scaffoldInit } from './init.js';
+export type { InitResult } from './init.js';
+
+export { pentryMatchers } from './matchers.js';
 
 export { builtInChecks, getCheck } from './checks/index.js';
 export {
@@ -39,6 +48,8 @@ export type {
   ResolvedConfig,
   RouteSpec,
   AuthConfig,
+  CheckOverride,
+  IgnoreRule,
   Severity,
   SeveritySummary,
   HttpClient,

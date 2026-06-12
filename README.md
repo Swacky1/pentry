@@ -9,7 +9,7 @@ OWASP Top 10 — broken access control, XSS, CORS holes, missing security header
 and more — then reports each finding with reproducible evidence and a fix.
 
 [![CI](https://github.com/Swacky1/pentry/actions/workflows/ci.yml/badge.svg)](https://github.com/Swacky1/pentry/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/pentry.svg)](https://www.npmjs.com/package/pentry)
+[![npm](https://img.shields.io/npm/v/@red_official/pentry.svg)](https://www.npmjs.com/package/@red_official/pentry)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](./package.json)
 

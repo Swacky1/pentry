@@ -1,4 +1,4 @@
-import type { PentryConfig, ResolvedConfig, RouteSpec, Severity } from './types.js';
+import type { IgnoreRule, PentryConfig, ResolvedConfig, RouteSpec, Severity } from './types.js';
 
 /** Identity helper for config files: `export default defineConfig({ ... })`. */
 export function defineConfig(config: PentryConfig): PentryConfig {
@@ -59,13 +59,26 @@ export function resolveConfig(config: PentryConfig): ResolvedConfig {
     routes,
     checks: config.checks ?? [],
     exclude: config.exclude ?? [],
-    ignore: config.ignore ?? [],
+    ignore: normalizeIgnore(config.ignore),
+    overrides: config.overrides ?? {},
+    baseline: config.baseline,
     failOn: config.failOn ?? DEFAULTS.failOn,
     allowExternal,
     timeout: config.timeout ?? DEFAULTS.timeout,
     auth: config.auth,
     maxBodyCapture: config.maxBodyCapture ?? DEFAULTS.maxBodyCapture,
   };
+}
+
+/**
+ * Normalize ignore entries. A bare string is treated as matching either a
+ * fingerprint or a check ID (preserving the original simple behavior); object
+ * rules are passed through.
+ */
+function normalizeIgnore(ignore: Array<string | IgnoreRule> = []): IgnoreRule[] {
+  return ignore.map((entry) =>
+    typeof entry === 'string' ? { fingerprint: entry, check: entry } : entry,
+  );
 }
 
 function normalizeRoutes(routes: Array<string | RouteSpec> = []): Required<RouteSpec>[] {

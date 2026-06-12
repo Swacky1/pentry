@@ -1,6 +1,6 @@
 {
   "name": "@red_official/pentry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Security tests for your web app, in your test suite. Like Jest, but it pen-tests. Zero dependencies.",
   "keywords": [
     "security",
@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./matchers": {
+      "types": "./dist/matchers.d.ts",
+      "import": "./dist/matchers.js",
+      "require": "./dist/matchers.cjs"
     },
     "./package.json": "./package.json"
   },

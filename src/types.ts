@@ -90,6 +90,30 @@ export interface AuthConfig {
   cookie?: string;
 }
 
+/** Per-check configuration override, keyed by check ID in `overrides`. */
+export interface CheckOverride {
+  /** Force every finding from this check to a specific severity. */
+  severity?: Severity;
+  /** Disable this check entirely (equivalent to adding it to `exclude`). */
+  enabled?: boolean;
+}
+
+/**
+ * A finding suppression. A bare string matches a finding's fingerprint or its
+ * check ID; the object form additionally supports a documented reason and an
+ * expiry date, after which the suppression lapses and the finding resurfaces.
+ */
+export interface IgnoreRule {
+  /** Finding fingerprint to suppress. */
+  fingerprint?: string;
+  /** Suppress an entire check by ID. */
+  check?: string;
+  /** Why it's suppressed — surfaced in verbose logs; documents intent. */
+  reason?: string;
+  /** ISO date (YYYY-MM-DD) after which this suppression no longer applies. */
+  expires?: string;
+}
+
 /** User-facing configuration accepted by `scan()` and the CLI. */
 export interface PentryConfig {
   /** Base URL of the app under test, e.g. `http://localhost:3000`. */
@@ -100,8 +124,15 @@ export interface PentryConfig {
   checks?: string[];
   /** Check IDs to skip. Applied after `checks`. */
   exclude?: string[];
-  /** Finding fingerprints (or check IDs) to suppress from results. */
-  ignore?: string[];
+  /** Finding fingerprints / check IDs to suppress, as strings or rich rules. */
+  ignore?: Array<string | IgnoreRule>;
+  /** Per-check overrides (severity remap, enable/disable), keyed by check ID. */
+  overrides?: Record<string, CheckOverride>;
+  /**
+   * Path to a baseline file (see `pentry baseline`). Findings recorded in the
+   * baseline are reported but do not fail the run — only *new* findings do.
+   */
+  baseline?: string;
   /** Minimum severity that should cause a non-zero exit / failed assertion. */
   failOn?: Severity;
   /**
@@ -124,7 +155,9 @@ export interface ResolvedConfig {
   routes: Required<RouteSpec>[];
   checks: string[];
   exclude: string[];
-  ignore: string[];
+  ignore: IgnoreRule[];
+  overrides: Record<string, CheckOverride>;
+  baseline?: string;
   failOn: Severity;
   allowExternal: boolean;
   timeout: number;

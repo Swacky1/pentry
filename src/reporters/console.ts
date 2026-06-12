@@ -1,4 +1,5 @@
-import type { Finding, ResolvedConfig, Severity, SeveritySummary } from '../types.js';
+import type { ScanReport } from '../report.js';
+import type { Severity, SeveritySummary } from '../types.js';
 import { SEVERITY_ORDER } from '../types.js';
 import { colors } from '../util/colors.js';
 
@@ -11,11 +12,8 @@ const SEVERITY_LABEL: Record<Severity, string> = {
 };
 
 /** Pretty, human-readable report for terminals. */
-export function consoleReporter(
-  findings: Finding[],
-  config: ResolvedConfig,
-  summary: SeveritySummary,
-): string {
+export function consoleReporter(report: ScanReport, summary: SeveritySummary): string {
+  const { config, findings } = report;
   const lines: string[] = [];
   lines.push('');
   lines.push(colors.bold(`Pentry security report — ${config.target}`));
@@ -32,8 +30,10 @@ export function consoleReporter(
   );
 
   for (const f of sorted) {
+    const baselined = report.isBaselined(f);
     lines.push('');
-    lines.push(`${SEVERITY_LABEL[f.severity]}  ${colors.bold(f.title)}`);
+    const tag = baselined ? colors.gray(' (baseline)') : '';
+    lines.push(`${SEVERITY_LABEL[f.severity]}  ${colors.bold(f.title)}${tag}`);
     lines.push(colors.gray(`      ${f.checkId} · ${f.target}`));
     lines.push(`      ${wrapText(f.description, 6)}`);
     lines.push(`      ${colors.cyan('Fix:')} ${wrapText(f.remediation, 6)}`);
@@ -49,31 +49,33 @@ export function consoleReporter(
   lines.push('');
   lines.push(colors.gray('─'.repeat(60)));
   lines.push(summaryLine(summary));
-  const blocking = thresholdCount(summary, config.failOn);
+  if (report.baseline.size > 0) {
+    lines.push(
+      colors.gray(`${report.baselinedFindings().length} finding(s) accepted by baseline.`),
+    );
+  }
+  const blocking = report.blockingCount();
   if (blocking > 0) {
-    lines.push(colors.red(`✗ ${blocking} finding(s) at or above "${config.failOn}" — failing.`));
+    lines.push(
+      colors.red(`✗ ${blocking} new finding(s) at or above "${config.failOn}" — failing.`),
+    );
   } else {
-    lines.push(colors.green(`✓ No findings at or above "${config.failOn}".`));
+    lines.push(colors.green(`✓ No new findings at or above "${config.failOn}".`));
   }
   lines.push('');
   return lines.join('\n');
 }
 
 function summaryLine(summary: SeveritySummary): string {
-  const parts = [
-    summary.critical && colors.red(`${summary.critical} critical`),
-    summary.high && colors.red(`${summary.high} high`),
-    summary.medium && colors.yellow(`${summary.medium} medium`),
-    summary.low && colors.blue(`${summary.low} low`),
-    summary.info && colors.gray(`${summary.info} info`),
-  ].filter(Boolean);
-  return parts.length ? parts.join(colors.gray(' · ')) : colors.green('clean');
-}
-
-function thresholdCount(summary: SeveritySummary, failOn: Severity): number {
-  return (Object.entries(summary) as [Severity, number][])
-    .filter(([sev]) => SEVERITY_ORDER[sev] >= SEVERITY_ORDER[failOn])
-    .reduce((sum, [, count]) => sum + count, 0);
+  const parts: Array<string | false> = [
+    summary.critical > 0 && colors.red(`${summary.critical} critical`),
+    summary.high > 0 && colors.red(`${summary.high} high`),
+    summary.medium > 0 && colors.yellow(`${summary.medium} medium`),
+    summary.low > 0 && colors.blue(`${summary.low} low`),
+    summary.info > 0 && colors.gray(`${summary.info} info`),
+  ];
+  const present = parts.filter((p): p is string => Boolean(p));
+  return present.length ? present.join(colors.gray(' · ')) : colors.green('clean');
 }
 
 /** Word-wrap `text` to the terminal width, indenting continuation lines. */

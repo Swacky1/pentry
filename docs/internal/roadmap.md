@@ -21,23 +21,22 @@ heavier territory (auth flows, stateful checks, injection depth). **Nothing past
 
 ---
 
-## v1.1 — Adoptable
+## v1.1 — Adoptable ✅ (shipped in 0.2.0)
 
 _Theme: a team can drop Pentry onto an existing app without drowning in
 pre-existing findings, and wire it into the tools they already use in minutes._
 
-- [ ] **Baseline / accept-list workflow** (`pentry baseline`): snapshot current
+- [x] **Baseline / accept-list workflow** (`pentry baseline`): snapshot current
       findings so only _new_ issues fail the run. The single biggest blocker to
       adopting any scanner on a mature codebase.
-- [ ] **Config file loading**: auto-discover `pentry.config.{js,mjs,ts,json}` and
-      load `defineConfig(...)` (today the type helper exists but isn't read).
-- [ ] **`pentry init`**: interactive scaffold that writes a config and a starter
-      test for the detected runner.
-- [ ] **Vitest/Jest matcher package** (`@red_official/pentry-matchers`):
+- [x] **Config file loading**: auto-discover `pentry.config.{js,mjs,cjs,json}` and
+      load `defineConfig(...)` (`.ts` under a TS-aware runtime).
+- [x] **`pentry init`**: scaffold that writes a config and a starter test for the
+      detected runner (Vitest/Jest/node:test).
+- [x] **Vitest/Jest matchers** at `@red_official/pentry/matchers`:
       `expect(report).toBeSecure()` / `toHaveNoFindingsAbove('high')`.
-- [ ] **Per-check severity overrides and options** in config (e.g. downgrade
-      `info-disclosure`, set `failOn` per check).
-- [ ] **Finding suppression by annotation**: richer `ignore` with reasons + expiry.
+- [x] **Per-check overrides** in config: remap a check's severity or disable it.
+- [x] **Finding suppression by annotation**: richer `ignore` with reasons + expiry.
 
 ## v1.2 — Sharper signal
 
