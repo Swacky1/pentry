@@ -1,0 +1,5 @@
+{
+  "target": "http://localhost:4000",
+  "routes": ["/", "/search", { "path": "/api/admin", "protected": true }],
+  "failOn": "high"
+}

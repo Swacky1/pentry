@@ -1,0 +1,31 @@
+name: False positive
+description: Pentry reported a finding that isn't real
+labels: [false-positive, priority]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        False positives are high priority — precision is the whole point of Pentry.
+        Thanks for taking the time to report one.
+  - type: input
+    id: check
+    attributes:
+      label: Which check?
+      placeholder: cors
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: The finding (paste the JSON output)
+      description: Run with `--format json` and paste the relevant finding, including its evidence.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it's not a real issue
+      description: Explain what's actually safe about this response.
+    validations:
+      required: true

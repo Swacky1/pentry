@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability in Pentry
+    url: https://github.com/Swacky1/pentry/security/advisories/new
+    about: Please report vulnerabilities in Pentry privately, not as a public issue.
+  - name: Questions & discussion
+    url: https://github.com/Swacky1/pentry/discussions
+    about: Ask questions and share usage in Discussions.

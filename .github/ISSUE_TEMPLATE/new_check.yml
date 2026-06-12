@@ -1,0 +1,39 @@
+name: Propose a new check
+description: Suggest a new security check for Pentry
+labels: [check, enhancement]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Check name
+      placeholder: open-redirect
+    validations:
+      required: true
+  - type: textarea
+    id: detects
+    attributes:
+      label: What does it detect?
+      description: The vulnerability class and how it's tested.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Typical severity
+      options: [info, low, medium, high, critical]
+    validations:
+      required: true
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: False-positive story
+      description: |
+        This is the bar for new checks. How do we keep this from crying wolf?
+        What benign cases look like a finding, and how does the check avoid them?
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: OWASP, CWE, MDN, or other authoritative links.
