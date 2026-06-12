@@ -1,0 +1,63 @@
+name: 'Pentry security scan'
+description: 'Run Pentry security tests against a running app and fail the build on findings.'
+author: 'Swacky1'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  target:
+    description: 'Base URL of the running app to scan (e.g. http://localhost:3000).'
+    required: true
+  fail-on:
+    description: 'Minimum severity that fails the run: info|low|medium|high|critical.'
+    required: false
+    default: 'high'
+  routes:
+    description: 'Comma-separated routes to test (e.g. /,/api/users).'
+    required: false
+    default: ''
+  format:
+    description: 'Report format: console|json|sarif|junit|markdown|html.'
+    required: false
+    default: 'console'
+  output:
+    description: 'Write the report to this file instead of stdout.'
+    required: false
+    default: ''
+  config:
+    description: 'Path to a pentry config file.'
+    required: false
+    default: ''
+  baseline:
+    description: 'Path to a baseline file; only new findings fail.'
+    required: false
+    default: ''
+  version:
+    description: 'Version of @red_official/pentry to run.'
+    required: false
+    default: 'latest'
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      # Inputs are passed via env (not interpolated into the command) to avoid
+      # shell injection, and assembled into an argv array.
+      env:
+        PENTRY_VERSION: ${{ inputs.version }}
+        TARGET: ${{ inputs.target }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        ROUTES: ${{ inputs.routes }}
+        FORMAT: ${{ inputs.format }}
+        OUTPUT: ${{ inputs.output }}
+        CONFIG: ${{ inputs.config }}
+        BASELINE: ${{ inputs.baseline }}
+      run: |
+        set -euo pipefail
+        ARGS=(scan "$TARGET" --fail-on "$FAIL_ON" --format "$FORMAT")
+        if [ -n "$ROUTES" ]; then ARGS+=(--routes "$ROUTES"); fi
+        if [ -n "$OUTPUT" ]; then ARGS+=(--output "$OUTPUT"); fi
+        if [ -n "$CONFIG" ]; then ARGS+=(--config "$CONFIG"); fi
+        if [ -n "$BASELINE" ]; then ARGS+=(--baseline "$BASELINE"); fi
+        npx --yes "@red_official/pentry@${PENTRY_VERSION}" "${ARGS[@]}"

@@ -46,6 +46,7 @@ export async function loadConfigFile(file: string): Promise<Partial<PentryConfig
       throw new Error(
         `Could not load TypeScript config "${file}". Run Pentry under a TS-aware runtime ` +
           `(e.g. \`tsx\`) or use a .js/.mjs/.json config. Original error: ${describe(error)}`,
+        { cause: error },
       );
     }
     throw error;

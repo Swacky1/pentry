@@ -6,7 +6,7 @@ meet `--fail-on`, and can emit SARIF or JUnit for native CI reporting.
 
 ## GitHub Actions
 
-### Basic gate
+### Using the Pentry action (simplest)
 
 ```yaml
 name: security
@@ -16,18 +16,29 @@ jobs:
   pentry:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
-      - run: npm ci
-      - run: npm run build --if-present
-      - name: Start app
-        run: npm start &
-      - name: Wait for app
-        run: npx wait-on http://localhost:3000
+          node-version: 22
+      - run: npm ci && npm run build --if-present
+      - run: npm start &
+      - run: npx wait-on http://localhost:3000
       - name: Pentry scan
-        run: npx pentry scan http://localhost:3000 --fail-on high
+        uses: Swacky1/pentry@v1
+        with:
+          target: http://localhost:3000
+          fail-on: high
+          routes: /,/api/users
+```
+
+Action inputs: `target` (required), `fail-on`, `routes`, `format`, `output`,
+`config`, `baseline`, `version`.
+
+### Or call the CLI directly
+
+```yaml
+- name: Pentry scan
+  run: npx @red_official/pentry scan http://localhost:3000 --fail-on high
 ```
 
 ### Surface findings in the Security tab (SARIF)

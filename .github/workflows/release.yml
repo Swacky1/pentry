@@ -1,5 +1,13 @@
 name: Release
 
+# Publishes to npm with provenance when a version tag (vX.Y.Z) is pushed.
+# Security model:
+#   - Runs only on tag pushes from this repo (not on PRs / forks).
+#   - Uses a GitHub Environment ("release") so the publish can require manual
+#     approval before the NPM_TOKEN is ever exposed to a job.
+#   - Least-privilege permissions; id-token:write only for npm provenance.
+#   - Verifies the tag matches package.json before publishing.
+
 on:
   push:
     tags:
@@ -7,24 +15,45 @@ on:
 
 permissions:
   contents: read
-  id-token: write # required for npm provenance
 
 jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
+    # Create this environment in repo Settings → Environments and add required
+    # reviewers to gate every publish behind a human approval.
+    environment:
+      name: release
+      url: https://www.npmjs.com/package/@red_official/pentry
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance (Sigstore)
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
           cache: npm
+
       - run: npm ci
+
+      # Guard: the git tag must match the version in package.json.
+      - name: Verify tag matches package.json
+        run: |
+          PKG_VERSION="v$(node -p "require('./package.json').version")"
+          TAG="${GITHUB_REF_NAME}"
+          if [ "$PKG_VERSION" != "$TAG" ]; then
+            echo "Tag $TAG does not match package.json ($PKG_VERSION)"; exit 1
+          fi
+
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
       - run: npm run build
-      # Publishing requires an NPM_TOKEN secret with publish rights.
+
+      # Publishes with provenance. Requires an NPM_TOKEN (Automation token)
+      # stored as a secret on the "release" environment or the repository.
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -6,6 +6,22 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Official GitHub Action** (`action.yml`): `uses: Swacky1/pentry@v1` to run a
+  scan in CI, with injection-safe argument passing.
+
+### Changed
+
+- Hardened the release workflow: a gated `release` Environment, a tag↔version
+  guard, and least-privilege permissions.
+
+### Maintenance
+
+- Upgraded the dev toolchain — ESLint 10 (flat config), TypeScript 6,
+  typescript-eslint 8, `@types/node` 25, Vitest 4 — and cleared all dependency
+  advisories (`npm audit` reports 0). Runtime stays zero-dependency.
+
 ## [0.3.0] — 2026-06-12
 
 The **v1.2 "Sharper signal"** milestone — more high-confidence checks and reports
